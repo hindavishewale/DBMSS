@@ -1,0 +1,37 @@
+create table library (book_no integer primary key,book_name varchar(100),book_publisher varchar(100),book_count int);
+
+create table library_audit(action_type varchar(100),book_no int,book_name varchar(100),book_publisher varchar(100),book_count int,action_time timestamp default current_timestamp);
+
+INSERT INTO library (book_no, book_name, book_publisher, book_count) VALUES
+    -> (101, 'The Alchemist', 'HarperCollins', 5),
+    -> (102, 'Wings of Fire', 'Universities Press', 3),
+    -> (103, 'Think and Grow Rich', 'Penguin', 4),
+    -> (104, 'Clean Code', 'Prentice Hall', 2),
+    -> (105, 'Atomic Habits', 'Penguin', 6);
+
+select * from library;
+
+delimiter //
+mysql> create trigger library after update on library for each row
+       begin
+       insert into library_audit(action_type,book_no,book_name,book_publisher,book_count)
+       values('UPDATE',old.book_no,old.book_name,old.book_publisher,old.book_count);
+       end;
+       //
+
+update library set book_count=10 where book_no=101;
+    -> //
+
+ select * from library_audit;
+    -> //
+
+delimiter //
+mysql> create trigger library1 after delete on library for each row
+    -> begin
+    -> insert into library_audit(action_type,book_no,book_name,book_publisher,book_count)
+    -> values('DELETE',old.book_no,old.book_name,old.book_publisher,old.book_count);
+    -> end;
+    -> //
+
+select * from library_audit;
+    -> //
