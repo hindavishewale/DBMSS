@@ -1,0 +1,55 @@
+create table student(rollno int,name varchar(100),totalmarks int);
+
+ create table result(rollno int,name varchar(100),grade varchar(100));
+
+delimiter //
+create function calgrade(tmarks int) returns varchar(100)
+deterministic
+begin
+    declare grade varchar(100);
+    if tmarks >= 90 then
+        set grade = 'distinction';
+    elseif tmarks >= 75 then
+        set grade = 'first class';
+    elseif tmarks >= 60 then
+        set grade = 'second class';
+    elseif tmarks >= 50 then
+        set grade = 'pass';
+    else
+        set grade = 'fail';
+    end if;
+
+    return grade;
+end;
+//
+
+
+
+delimiter //
+create procedure proc_grade()
+begin
+    declare vfinished int default 0;
+    declare rno int;
+    declare sname varchar(100);
+    declare tmarks int;
+    declare grade varchar(100);
+    declare stud_cursor cursor for select rollno, name, totalmarks from student;
+    declare continue handler for not found set vfinished = 1;
+    delete from result;
+    open stud_cursor;
+    getdata: loop
+        fetch stud_cursor into rno, sname, tmarks;
+        if vfinished = 1 then 
+            leave getdata;
+        end if;
+        set grade = calgrade(tmarks);
+        insert into result (rollno, name, grade) values (rno, sname, grade);
+    end loop;
+    close stud_cursor;
+end;
+//
+
+
+ call proc_grade();
+
+ select * from result;
