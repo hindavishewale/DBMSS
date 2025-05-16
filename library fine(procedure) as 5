@@ -1,0 +1,28 @@
+ create table library(roll int,name_book varchar(100),date_issue date,status varchar(1));
+
+ create table fine(roll int,find_date date,fine_amt int);
+
+delimiter //
+create procedure callfine(rno int,n_book varchar(100))
+begin 
+declare days int;
+declare fine_amt int;
+declare date1 date;
+select date_issue into date1 from library where roll=rno and name_book=n_book;
+set days=datediff(curdate( ),date1);
+if days>15 and days<30 then
+set fine_amt=(days-15)*5;
+end if;
+if days>30 then 
+set fine_amt=75+(days-30)*50;
+end if;
+select concat('fine amount',fine_amt);
+if fine_amt>0 then
+insert into fine values(rno,curdate,fine_amt);
+update library set status='R' where roll=rno;
+end if;
+end
+//
+
+source path.sql
+//
